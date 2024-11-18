@@ -49,16 +49,22 @@ fn getCalibrationValue() !u32 {
     return sum;
 }
 
-fn replace_string(str: []const u8, map: std.StringHashMap(*const [1:0]u8)) void {
-    _ = str; // autofix
+fn replace_string(allocator: std.mem.Allocator, input: []const u8, target: []const u8, replacement: []const u8) void {
+    _ = allocator; // autofix
+    print("{s} {s} {s}", .{ input, target, replacement });
+}
+
+fn fix_calibration_value(str: []const u8, map: std.StringHashMap(*const [1:0]u8)) void {
     // iterate over str
     // save char to buffer
     // check if buffer exists in map keys
     //lh5jzqxeight84
+
     var iterator = map.keyIterator();
     while (iterator.next()) |key| {
         const val = map.get(key.*).?[0] - '0';
-        print("{s} -> {}\n", .{ key.*, val });
+        const result = replace_string(std.heap.page_allocator, str, key, val);
+        print("{s}\n", .{result});
     }
 
     // [][]const u8
@@ -77,5 +83,5 @@ test {
     try map.put("eight", "8");
     try map.put("nine", "9");
 
-    replace_string("9eight3", map);
+    fix_calibration_value("9eight3", map);
 }
